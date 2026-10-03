@@ -2,11 +2,11 @@ package fermiumbooter;
 
 import java.io.File;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import com.llamalad7.mixinextras.MixinExtrasBootstrap;
 import fermiumbooter.util.CustomLogger;
@@ -22,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.Mixins;
+import org.spongepowered.asm.util.Files;
 
 @IFMLLoadingPlugin.Name("FermiumBooter")
 @IFMLLoadingPlugin.MCVersion("1.12.2")
@@ -70,7 +71,13 @@ public class FermiumPlugin implements IFMLLoadingPlugin {
 
 		//Indev, mixin adds ForceLoadAsMod jars on the classpath to the reparseable coremods, which the classpath mod scan skips, so they would not load as mods
 		if(FMLLaunchHandler.isDeobfuscatedEnvironment()) {
-			Set<String> classpathJars = Launch.classLoader.getSources().stream().map(URL::getPath).map(path -> new File(path).getName()).collect(Collectors.toSet());
+			//Same URL to file conversion as mixin, so names with spaces match
+			Set<String> classpathJars = new HashSet<>();
+			for(URL url : Launch.classLoader.getSources()) {
+				try {
+					classpathJars.add(Files.toFile(url).getName());
+				} catch(Exception ignored) {}
+			}
 			CoreModManager.getReparseableCoremods().removeIf(classpathJars::contains);
 		}
 

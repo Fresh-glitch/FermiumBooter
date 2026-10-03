@@ -109,7 +109,7 @@ public abstract class FermiumJarScanner {
 				.disableModuleScanning()
 				.overrideClasspath(
 						mcDir.getAbsolutePath()+"/mods/*"+ File.pathSeparatorChar+
-								Arrays.stream(Launch.classLoader.getURLs()).map(URL::getPath).collect(Collectors.joining(File.pathSeparator)) //not the biggest fan of this
+								Arrays.stream(Launch.classLoader.getURLs()).map(FermiumJarScanner::getPath).collect(Collectors.joining(File.pathSeparator)) //not the biggest fan of this
 				)
 				.rejectPackages(
 						"java.*",
@@ -381,6 +381,15 @@ public abstract class FermiumJarScanner {
 		if(modVersionRange.equals(presentVersion.toString())) return true; // if targeting an exact version (or a very weirdly named one)
 		return VersionRange.createFromVersionSpec(modVersionRange).containsVersion(presentVersion); //works for a surprising range of ways to write a version
     }
+
+	//URL::getPath keeps %20 for spaces, so jars with spaces in their path were not scanned
+	private static String getPath(URL url) {
+		try {
+			return org.spongepowered.asm.util.Files.toFile(url).getAbsolutePath();
+		} catch(Exception e) {
+			return url.getPath();
+		}
+	}
 
 	private static Boolean skipCompatHandlingChecks = null;
 	

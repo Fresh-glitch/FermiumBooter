@@ -1,7 +1,6 @@
 package fermiumbooter;
 
 import java.io.File;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,6 @@ import com.llamalad7.mixinextras.MixinExtrasBootstrap;
 import fermiumbooter.util.CustomLogger;
 import fermiumbooter.util.FermiumJarScanner;
 import fermiumbooter.util.ForcedConfigHandler;
-import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.relauncher.CoreModManager;
 import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
@@ -22,7 +20,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.Mixins;
-import org.spongepowered.asm.util.Files;
 
 @IFMLLoadingPlugin.Name("FermiumBooter")
 @IFMLLoadingPlugin.MCVersion("1.12.2")
@@ -71,12 +68,10 @@ public class FermiumPlugin implements IFMLLoadingPlugin {
 
 		//Indev, mixin adds ForceLoadAsMod jars on the classpath to the reparseable coremods, which the classpath mod scan skips, so they would not load as mods
 		if(FMLLaunchHandler.isDeobfuscatedEnvironment()) {
-			//Same URL to file conversion as mixin, so names with spaces match
+			//Only the launch classpath, mods folder coremods are class loader sources too and would load twice
 			Set<String> classpathJars = new HashSet<>();
-			for(URL url : Launch.classLoader.getSources()) {
-				try {
-					classpathJars.add(Files.toFile(url).getName());
-				} catch(Exception ignored) {}
+			for(String path : System.getProperty("java.class.path").split(File.pathSeparator)) {
+				classpathJars.add(new File(path).getName());
 			}
 			CoreModManager.getReparseableCoremods().removeIf(classpathJars::contains);
 		}

@@ -66,9 +66,9 @@ public class FermiumPlugin implements IFMLLoadingPlugin {
 	public void injectData(Map<String, Object> data) {
 		CustomLogger.init();
 
-		//Indev, mixin adds ForceLoadAsMod jars on the classpath to the reparseable coremods, which the classpath mod scan skips, so they would not load as mods
+		//Indev, ForceLoadAsMod dependencies would otherwise not load as mods
 		if(FMLLaunchHandler.isDeobfuscatedEnvironment()) {
-			//Only the launch classpath, mods folder coremods are class loader sources too and would load twice
+			//Not the class loader sources, mods folder coremods would load twice
 			Set<String> classpathJars = new HashSet<>();
 			for(String path : System.getProperty("java.class.path").split(File.pathSeparator)) {
 				classpathJars.add(new File(path).getName());

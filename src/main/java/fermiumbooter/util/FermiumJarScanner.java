@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -382,11 +383,11 @@ public abstract class FermiumJarScanner {
 		return VersionRange.createFromVersionSpec(modVersionRange).containsVersion(presentVersion); //works for a surprising range of ways to write a version
     }
 
-	//URL::getPath keeps %20 for spaces, so jars with spaces in their path were not scanned
+	//URL::getPath keeps %20, so paths with spaces were not scanned
 	private static String getPath(URL url) {
 		try {
-			return org.spongepowered.asm.util.Files.toFile(url).getAbsolutePath();
-		} catch(Exception e) {
+			return new File(url.toURI()).getPath();
+		} catch(URISyntaxException | IllegalArgumentException e) {
 			return url.getPath();
 		}
 	}
